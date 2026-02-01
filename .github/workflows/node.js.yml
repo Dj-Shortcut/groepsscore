@@ -1,0 +1,21 @@
+
+---
+
+## 🧰 Dependencies
+
+- **Node.js** — Koop de LTS versie (v20.x)  
+  *Node 24+ veroorzaakt issues met native modules zoals better-sqlite3.*
+- **npm**  
+- **better-sqlite3** — sqlite driver
+- **tsx** — moderne TS runner in plaats van ts-node/esm
+
+---
+
+## ⚙️ Installatie
+
+Clone de repo en installeer de dependencies:
+
+```bash
+git clone https://github.com/Dj-Shortcut/groepsscore.git
+cd groepscore
+npm install
