@@ -6,12 +6,13 @@
   "private": true,
 "scripts": {
   "test": "node --import tsx src/test.ts",
+  "start": "node --import tsx src/server.ts",
+  "dev": "node --import tsx src/server.ts",
   "leaderboard": "node --import tsx src/leaderboard.ts",
   "export": "node --import tsx src/export.ts",
   "reset:month": "node --import tsx src/monthlyReset.ts",
   "simulate:spam": "node --import tsx src/simulateSpam.ts"
-}
-,
+},
   "dependencies": {
     "better-sqlite3": "^9.4.0"
   },
