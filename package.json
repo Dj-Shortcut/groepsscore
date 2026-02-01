@@ -5,12 +5,12 @@
   "type": "module",
   "private": true,
   "scripts": {
-  "test": "npx tsx src/test.ts",
-  "leaderboard": "npx tsx src/leaderboard.ts",
-  "export": "npx tsx src/export.ts",
-  "reset:month": "npx tsx src/monthlyReset.ts",
-  "simulate:spam": "npx tsx src/simulateSpam.ts"
-},
+    "test": "npx tsx src/test.ts",
+    "leaderboard": "npx tsx src/leaderboard.ts",
+    "export": "npx tsx src/export.ts",
+    "reset:month": "npx tsx src/monthlyReset.ts",
+    "simulate:spam": "npx tsx src/simulateSpam.ts"
+  },
   "dependencies": {
     "better-sqlite3": "^9.4.0"
   },
