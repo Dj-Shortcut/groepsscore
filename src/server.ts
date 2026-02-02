@@ -1,6 +1,10 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 
+const server = http.createServer((req, res) => {
+  console.log("REQ IN:", req.method, req.url);
+
+
 const PORT = process.env.PORT
   ? Number(process.env.PORT)
   : 3000;
