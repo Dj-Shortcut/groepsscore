@@ -1,0 +1,1 @@
+{"version":3,"file":"handleEvent.js","sourceRoot":"","sources":["../src/handleEvent.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,WAAW,EAAE,MAAM,eAAe,CAAC;AAG5C,MAAM,UAAU,WAAW,CAAC,KAAoB,EAAE,KAAK,GAAG,KAAK;IAC7D,OAAO,WAAW,CAChB,KAAK,CAAC,MAAM,EACZ,KAAK,CAAC,IAAI,EACV,KAAK,CAAC,SAAS,EACf,KAAK,CACN,CAAC;AACJ,CAAC"}

@@ -1,5 +1,5 @@
-import { db } from "./db";
-import { EventType } from "./types";
+import { db } from "./db.js";
+import { EventType } from "./types.js";
 
 /**
  * Interne DB-rij types

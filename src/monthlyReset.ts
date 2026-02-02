@@ -1,4 +1,4 @@
-import { resetMonthlyScores } from "./store";
+import { resetMonthlyScores } from "./store.js";
 
 export function runMonthlyReset() {
   console.log("🔁 Maandelijkse reset gestart");

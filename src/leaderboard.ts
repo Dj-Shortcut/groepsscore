@@ -1,6 +1,6 @@
-import { getMonthlyLeaderboard } from "./store";
-import { getLevel } from "./levels";
-import { getUserScore } from "./store";
+import { getMonthlyLeaderboard } from "./store.js";
+import { getLevel } from "./levels.js";
+import { getUserScore } from "./store.js";
 
 export function generateMonthlyLeaderboardText(): string {
   const rows = getMonthlyLeaderboard(10);

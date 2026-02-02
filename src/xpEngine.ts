@@ -1,11 +1,11 @@
 import { randomUUID } from "crypto";
-import { EventType } from "./types";
+import { EventType } from "./types.js";
 import {
   addEvent,
   addPoints,
   countEventsForDay,
   countRecentEvents,
-} from "./store";
+} from "./store.js";
 
 /**
  * Puntwaarden

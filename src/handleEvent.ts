@@ -1,5 +1,5 @@
-import { awardPoints } from "./xpEngine";
-import { InternalEvent } from "./events";
+import { awardPoints } from "./xpEngine.js";
+import { InternalEvent } from "./events.js";
 
 export function handleEvent(event: InternalEvent, debug = false) {
   return awardPoints(
