@@ -1,4 +1,4 @@
-app = "groepscore"
+app = "groepsscore"
 primary_region = "ams"
 
 [build]
