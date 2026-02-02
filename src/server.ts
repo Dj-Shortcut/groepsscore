@@ -7,6 +7,11 @@ const server = http.createServer((req, res) => {
 
 const PORT = Number(process.env.PORT);
 
+server.listen(PORT, () => {
+  console.log(`🚀 Groepscore server running on port ${PORT}`);
+});
+
+
 const server = http.createServer((req, res) => {
   // Leaderboard
   if (req.method === "GET" && req.url?.startsWith("/leaderboard")) {
