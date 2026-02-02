@@ -17,5 +17,10 @@
     "verbatimModuleSyntax": false,
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/test*.ts",
+    "src/**/test-*.ts",
+    "src/fixtures/**"
+  ]
 }
