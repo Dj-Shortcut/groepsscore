@@ -1,9 +1,6 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
-const DEFAULT_PORT = 8080;
-const envPort = Number(process.env.PORT);
-const PORT = Number.isFinite(envPort) && envPort > 0 ? envPort : DEFAULT_PORT;
-const HOST = process.env.HOST ?? "0.0.0.0";
+const PORT = Number(process.env.PORT) || 3000;
 const server = http.createServer((req, res) => {
     console.log("REQ IN:", req.method, req.url);
     // Leaderboard
