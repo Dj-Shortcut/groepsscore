@@ -1,24 +1,16 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 
+const PORT = Number(process.env.PORT) || 3000;
+
 const server = http.createServer((req, res) => {
   console.log("REQ IN:", req.method, req.url);
 
-
-const PORT = Number(process.env.PORT);
-
-server.listen(PORT, () => {
-  console.log(`🚀 Groepscore server running on port ${PORT}`);
-});
-
-
-const server = http.createServer((req, res) => {
   // Leaderboard
   if (req.method === "GET" && req.url?.startsWith("/leaderboard")) {
-  leaderboardHandler(res);
-  return;
-}
-
+    leaderboardHandler(res);
+    return;
+  }
 
   // Health check
   if (req.method === "GET" && req.url === "/health") {
@@ -27,7 +19,7 @@ const server = http.createServer((req, res) => {
       JSON.stringify({
         status: "ok",
         service: "groepscore",
-        time: Date.now()
+        time: Date.now(),
       })
     );
     return;
@@ -37,7 +29,7 @@ const server = http.createServer((req, res) => {
   res.writeHead(404, { "Content-Type": "application/json" });
   res.end(
     JSON.stringify({
-      error: "not_found"
+      error: "not_found",
     })
   );
 });
