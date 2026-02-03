@@ -2,10 +2,7 @@ import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 const DEFAULT_PORT = 8080;
 const envPort = Number(process.env.PORT);
-const isFly = Boolean(process.env.FLY_APP_NAME || process.env.FLY_REGION);
-const PORT = isFly && envPort && envPort !== DEFAULT_PORT
-    ? DEFAULT_PORT
-    : envPort || DEFAULT_PORT;
+const PORT = Number.isFinite(envPort) && envPort > 0 ? envPort : DEFAULT_PORT;
 const HOST = process.env.HOST ?? "0.0.0.0";
 const server = http.createServer((req, res) => {
     console.log("REQ IN:", req.method, req.url);
@@ -19,7 +16,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
             status: "ok",
-            service: "groepscore",
+            service: "groepsscore",
             time: Date.now(),
         }));
         return;
