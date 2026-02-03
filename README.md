@@ -21,6 +21,32 @@ klaar staat zodra je toegang hebt tot de Facebook Group API.
 
 ---
 
+## ✅ Prerequisites
+
+- **Node.js 20+ (LTS)**  
+- **npm** (meekomend met Node.js)
+
+---
+
+## ▶️ Installeren, bouwen en draaien
+
+```bash
+npm install
+npm run build
+npm start
+```
+
+**Overige scripts**
+```bash
+npm test
+npm run leaderboard
+npm run export
+npm run reset:month
+npm run simulate:spam
+```
+
+---
+
 ## 🔗 Webhook-contract (Facebook events)
 
 Verwacht Facebook event:
@@ -36,6 +62,17 @@ Verwacht Facebook event:
 ---
 
 ## 📂 Overzicht van de projectstructuur
+
+- `src/` — TypeScript core-logica, routes en scripts.  
+- `data/` — Lokale dataopslag (o.a. SQLite).  
+- `dist/` — Gebouwde output (TypeScript → JavaScript).
+
+---
+
+## 🌐 Server host & poort
+
+Standaard start de server op **`0.0.0.0:8080`**.  
+Je kunt dit aanpassen via de env vars: **`HOST`** en **`PORT`** (zie `src/server.ts`).
 
 ---
 
