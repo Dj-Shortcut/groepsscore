@@ -1,7 +1,10 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 
-const PORT = Number(process.env.PORT) || 3000;
+const DEFAULT_PORT = 8080;
+const envPort = Number(process.env.PORT);
+const PORT = Number.isFinite(envPort) && envPort > 0 ? envPort : DEFAULT_PORT;
+const HOST = process.env.HOST ?? "0.0.0.0";
 
 const server = http.createServer((req, res) => {
   console.log("REQ IN:", req.method, req.url);
@@ -18,7 +21,7 @@ const server = http.createServer((req, res) => {
     res.end(
       JSON.stringify({
         status: "ok",
-        service: "groepscore",
+        service: "groepsscore",
         time: Date.now(),
       })
     );
@@ -34,6 +37,6 @@ const server = http.createServer((req, res) => {
   );
 });
 
-server.listen(PORT, () => {
-  console.log(`🚀 Groepscore server running on port ${PORT}`);
+server.listen(PORT, HOST, () => {
+  console.log(`🚀 Groepscore server running on http://${HOST}:${PORT}`);
 });

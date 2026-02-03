@@ -13,7 +13,7 @@ const server = http.createServer((req, res) => {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
             status: "ok",
-            service: "groepscore",
+            service: "groepsscore",
             time: Date.now(),
         }));
         return;
@@ -24,7 +24,7 @@ const server = http.createServer((req, res) => {
         error: "not_found",
     }));
 });
-server.listen(PORT, () => {
-    console.log(`🚀 Groepscore server running on port ${PORT}`);
+server.listen(PORT, HOST, () => {
+    console.log(`🚀 Groepscore server running on http://${HOST}:${PORT}`);
 });
 //# sourceMappingURL=server.js.map
