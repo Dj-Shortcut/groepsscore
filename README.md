@@ -21,5 +21,39 @@ klaar staat zodra je toegang hebt tot de Facebook Group API.
 
 ---
 
+## 🔗 Webhook-contract (Facebook events)
+
+Verwacht Facebook event:
+```json
+{
+  "type": "post" | "comment",
+  "userId": "string",
+  "timestamp": 0,
+  "postId": "string?"
+}
+```
+
+---
+
 ## 📂 Overzicht van de projectstructuur
 
+---
+
+## 🔐 GitHub SSH instellen op Windows (kort)
+
+Als `ssh-keygen` in PowerShell niet bestaat, ontbreekt de **OpenSSH Client**. Installeer
+die eerst en maak daarna je key aan.
+
+**OpenSSH Client installeren**
+1. **Instellingen → Apps → Optionele onderdelen → Functie toevoegen**
+2. Kies **OpenSSH Client** en installeer.
+
+Alternatief via PowerShell (Admin):
+```powershell
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+```
+
+**Daarna: SSH key genereren**
+```powershell
+ssh-keygen -t ed25519 -C "jouw-email@voorbeeld.com"
+```
