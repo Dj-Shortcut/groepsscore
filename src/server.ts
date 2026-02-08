@@ -31,7 +31,34 @@ const server = http.createServer((req, res) => {
     res.end(result.body);
     return;
   }
+// 🔹 Facebook Webhook events
+if (req.method === "POST" && url.pathname === "/webhook/facebook") {
+  let body = "";
 
+  req.on("data", chunk => {
+    body += chunk.toString();
+  });
+
+  req.on("end", () => {
+    // Meta vereist altijd 200 OK
+    res.writeHead(200);
+    res.end("EVENT_RECEIVED");
+
+    try {
+      const payload = JSON.parse(body);
+      console.log(
+        "META EVENT:",
+        JSON.stringify(payload, null, 2)
+      );
+    } catch (err) {
+      console.error("Invalid JSON from Meta", err);
+    }
+  });
+
+  return;
+}
+
+  
   // 🔹 Health check
   if (req.method === "GET" && url.pathname === "/health") {
     res.writeHead(200, { "Content-Type": "application/json" });
