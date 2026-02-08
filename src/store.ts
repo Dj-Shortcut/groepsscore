@@ -1,5 +1,5 @@
 import { db } from "./db.js";
-import { EventType } from "./types.js";
+import { EventType } from "./events.js";
 
 /**
  * Interne DB-rij types
@@ -117,6 +117,7 @@ export function addPoints(userId: string, points: number) {
   `
   ).run(points, points, Date.now(), userId);
 }
+
 /**
  * Reset wekelijkse scores
  */
