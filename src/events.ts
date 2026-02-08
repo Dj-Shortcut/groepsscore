@@ -1,6 +1,6 @@
 /**
- * Alle event types die het systeem kent
- * (DIT is de single source of truth)
+ * Alle event types die het systeem kent.
+ * DIT is de enige plaats waar EventType bestaat.
  */
 export type EventType =
   | "post"
@@ -9,14 +9,18 @@ export type EventType =
   | "message_read";
 
 /**
- * Interne event-representatie
- * Alles in de app werkt vanaf hier met dit type
+ * Interne event-representatie.
+ * Alles downstream (scoring, handlers, opslag)
+ * werkt uitsluitend met dit type.
  */
 export type InternalEvent = {
+  /**
+   * Actor / gebruiker die het event veroorzaakt
+   */
   userId: string;
 
   /**
-   * Type van event (zie EventType hierboven)
+   * Type van het event
    */
   type: EventType;
 
@@ -26,17 +30,25 @@ export type InternalEvent = {
   timestamp: number;
 
   /**
-   * Waar komt het event vandaan
+   * Herkomst van het event
    */
   source: "facebook" | "test" | "cli";
 
   /**
-   * Optional context (thread, post, group, …)
+   * Optional context:
+   * - postId
+   * - threadId
+   * - groupId
+   * - recipientId
    */
   targetId?: string;
 
   /**
-   * Vrije metadata (Facebook payload, message text, ids, …)
+   * Vrije metadata:
+   * - Facebook payload
+   * - message text
+   * - ids
+   * - debug info
    */
   meta?: Record<string, any>;
 };
