@@ -1,4 +1,4 @@
-import { InternalEvent } from "../events";
+import { InternalEvent } from "../events.js";
 
 export function mapFacebookPost(payload: any): InternalEvent {
   return {

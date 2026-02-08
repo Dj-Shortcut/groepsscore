@@ -1,11 +1,11 @@
 import { randomUUID } from "crypto";
-import { EventType } from "./types";
+import { EventType } from "./types.js";
 import {
   addEvent,
   addPoints,
   countEventsForDay,
   countRecentEvents,
-} from "./store";
+} from "./store.js";
 
 /**
  * Puntwaarden
@@ -35,6 +35,12 @@ const BURST_WINDOW_MS = 60_000; // 1 minuut
 export type AwardResult =
   | { ok: true }
   | { ok: false; reason: "burst" | "daily_limit" };
+
+function logDebug(debug: boolean, message: string): void {
+  if (debug) {
+    console.log(message);
+  }
+}
 
 function startOfDay(ts: number): number {
   const d = new Date(ts);
@@ -66,8 +72,9 @@ export function awardPoints(
   );
   const inCooldown = recentCount >= BURST_LIMIT;
 
-  if (inCooldown && debug) {
-    console.log(
+  if (inCooldown) {
+    logDebug(
+      debug,
       `⚠️ Cooldown actief → ${userId} (${recentCount} acties < 1 min)`
     );
   }
@@ -83,11 +90,10 @@ export function awardPoints(
   );
 
   if (todayCount >= DAILY_LIMITS[type]) {
-    if (debug) {
-      console.log(
-        `⛔ Daglimiet bereikt → ${userId} (${type}: ${todayCount})`
-      );
-    }
+    logDebug(
+      debug,
+      `⛔ Daglimiet bereikt → ${userId} (${type}: ${todayCount})`
+    );
     return { ok: false, reason: "daily_limit" };
   }
 
@@ -99,21 +105,16 @@ export function awardPoints(
   /**
    * 4️⃣ Punten alleen als niet in cooldown
    */
-  if (!inCooldown) {
-    addPoints(userId, POINTS[type]);
-
-    if (debug) {
-      console.log(`✅ Punt toegekend → ${userId} (${type})`);
-    }
-
-    return { ok: true };
-  }
-
-  if (debug) {
-    console.log(
+  if (inCooldown) {
+    logDebug(
+      debug,
       `⚠️ Geen punten (cooldown) → event wel gelogd (${userId})`
     );
+    return { ok: false, reason: "burst" };
   }
 
-  return { ok: false, reason: "burst" };
+  addPoints(userId, POINTS[type]);
+  logDebug(debug, `✅ Punt toegekend → ${userId} (${type})`);
+
+  return { ok: true };
 }

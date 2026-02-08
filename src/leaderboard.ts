@@ -1,15 +1,15 @@
-import { getMonthlyLeaderboard } from "./store";
-import { getLevel } from "./levels";
-import { getUserScore } from "./store";
+import { getWeeklyLeaderboard } from "./store.js";
+import { getLevel } from "./levels.js";
+import { getUserScore } from "./store.js";
 
-export function generateMonthlyLeaderboardText(): string {
-  const rows = getMonthlyLeaderboard(10);
+export function generateWeeklyLeaderboardText(): string {
+  const rows = getWeeklyLeaderboard(10);
 
   if (rows.length === 0) {
-    return "Nog geen activiteit deze maand 👀";
+    return "Nog geen activiteit deze week 👀";
   }
 
-  let text = "🏆 **Groepsscore – Maandranking**\n\n";
+  let text = "🏆 **Groepsscore – Weekranking**\n\n";
 
   rows.forEach((row, index) => {
   const score = getUserScore(row.user_id);
@@ -22,7 +22,7 @@ export function generateMonthlyLeaderboardText(): string {
 });
 
 
-  text += "\nIedere bijdrage telt. Volgende reset: einde van de maand ✨";
+  text += "\nIedere bijdrage telt. Volgende reset: einde van de week ✨";
 
   return text;
 }

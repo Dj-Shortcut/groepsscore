@@ -1,25 +1,26 @@
 {
   "compilerOptions": {
-    /* Project setup */
-    "target": "es2020",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
 
-    /* Node environment */
+    "rootDir": "src",
+    "outDir": "dist",
+
     "types": ["node"],
+    "resolveJsonModule": true,
 
-    /* Output */
     "sourceMap": true,
-
-    /* Type checking */
     "strict": true,
 
-    /* Module behavior */
     "esModuleInterop": true,
     "verbatimModuleSyntax": false,
-
-    /* Quality of life */
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/test*.ts",
+    "src/**/test-*.ts",
+    "src/fixtures/**"
+  ]
 }
