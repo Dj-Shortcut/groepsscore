@@ -1,6 +1,7 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 import { verifyFacebookWebhook } from "./webhookVerification.js";
+import { verifyFacebookSignature } from "./verifyFacebookSignature.js";
 
 const DEFAULT_PORT = 8080;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
@@ -40,24 +41,16 @@ if (req.method === "POST" && url.pathname === "/webhook/facebook") {
   });
 
   req.on("end", () => {
-    // Meta vereist altijd 200 OK
-    res.writeHead(200);
-    res.end("EVENT_RECEIVED");
+    const signature = req.headers["x-hub-signature-256"] as string | undefined;
 
-    try {
-      const payload = JSON.parse(body);
-      console.log(
-        "META EVENT:",
-        JSON.stringify(payload, null, 2)
-      );
-    } catch (err) {
-      console.error("Invalid JSON from Meta", err);
+    const valid = verifyFacebookSignature(body, signature);
+
+    if (!valid) {
+      console.warn("❌ Invalid Facebook signature");
+      res.writeHead(403);
+      res.end("Invalid signature");
+      return;
     }
-  });
-
-  return;
-}
-
   
   // 🔹 Health check
   if (req.method === "GET" && url.pathname === "/health") {
