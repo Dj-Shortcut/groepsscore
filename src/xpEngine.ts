@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { EventType } from "./types.js";
+import { EventType } from "./events.js";
 import {
   addEvent,
   addPoints,
