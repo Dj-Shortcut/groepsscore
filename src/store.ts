@@ -1,5 +1,7 @@
 import { db } from "./db.js";
 import { EventType } from "./events.js";
+import { ScorableEventType } from "./scorableEvents.js";
+
 
 /**
  * Interne DB-rij types
