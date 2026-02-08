@@ -1,5 +1,6 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
+import { verifyFacebookWebhook } from "./webhookVerification.js";
 
 const DEFAULT_PORT = 8080;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
@@ -18,22 +19,16 @@ const server = http.createServer((req, res) => {
 
   // 🔹 Facebook Webhook verification
   if (req.method === "GET" && url.pathname === "/webhook/facebook") {
-    const mode = url.searchParams.get("hub.mode");
-    const token = url.searchParams.get("hub.verify_token");
-    const challenge = url.searchParams.get("hub.challenge");
+    const result = verifyFacebookWebhook(url, process.env.FB_VERIFY_TOKEN);
 
-    if (
-      mode === "subscribe" &&
-      token === process.env.FB_VERIFY_TOKEN &&
-      challenge
-    ) {
+    if (result.status === 200) {
       res.writeHead(200, { "Content-Type": "text/plain" });
-      res.end(challenge);
+      res.end(result.body);
       return;
     }
 
     res.writeHead(403);
-    res.end("Forbidden");
+    res.end(result.body);
     return;
   }
 
