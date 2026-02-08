@@ -1,5 +1,5 @@
 import { randomUUID } from "crypto";
-import { EventType } from "./events.js";
+import { ScorableEventType } from "./scorableEvents.js";
 import {
   addEvent,
   addPoints,
@@ -10,7 +10,7 @@ import {
 /**
  * Puntwaarden
  */
-const POINTS: Record<EventType, number> = {
+const POINTS: Record<ScorableEventType, number> = {
   post: 10,
   comment: 3,
 };
@@ -18,7 +18,7 @@ const POINTS: Record<EventType, number> = {
 /**
  * Daglimieten
  */
-const DAILY_LIMITS: Record<EventType, number> = {
+const DAILY_LIMITS: Record<ScorableEventType, number> = {
   post: 3,
   comment: 10,
 };
@@ -27,7 +27,7 @@ const DAILY_LIMITS: Record<EventType, number> = {
  * Anti-spam instellingen
  */
 const BURST_LIMIT = 3;
-const BURST_WINDOW_MS = 60_000; // 1 minuut
+const BURST_WINDOW_MS = 60_000;
 
 /**
  * Resultaat van puntentoekenning
@@ -35,12 +35,6 @@ const BURST_WINDOW_MS = 60_000; // 1 minuut
 export type AwardResult =
   | { ok: true }
   | { ok: false; reason: "burst" | "daily_limit" };
-
-function logDebug(debug: boolean, message: string): void {
-  if (debug) {
-    console.log(message);
-  }
-}
 
 function startOfDay(ts: number): number {
   const d = new Date(ts);
@@ -59,12 +53,12 @@ function endOfDay(ts: number): number {
  */
 export function awardPoints(
   userId: string,
-  type: EventType,
+  type: ScorableEventType,
   timestamp: number = Date.now(),
-  debug: boolean = false
+  debug = false
 ): AwardResult {
   /**
-   * 1️⃣ Burst check (cooldown)
+   * 1️⃣ Burst check
    */
   const recentCount = countRecentEvents(
     userId,
@@ -72,15 +66,8 @@ export function awardPoints(
   );
   const inCooldown = recentCount >= BURST_LIMIT;
 
-  if (inCooldown) {
-    logDebug(
-      debug,
-      `⚠️ Cooldown actief → ${userId} (${recentCount} acties < 1 min)`
-    );
-  }
-
   /**
-   * 2️⃣ Daglimiet check (hard)
+   * 2️⃣ Daglimiet check
    */
   const todayCount = countEventsForDay(
     userId,
@@ -90,31 +77,21 @@ export function awardPoints(
   );
 
   if (todayCount >= DAILY_LIMITS[type]) {
-    logDebug(
-      debug,
-      `⛔ Daglimiet bereikt → ${userId} (${type}: ${todayCount})`
-    );
     return { ok: false, reason: "daily_limit" };
   }
 
   /**
-   * 3️⃣ Event altijd opslaan
+   * 3️⃣ Event opslaan
    */
   addEvent(randomUUID(), userId, type, timestamp);
 
   /**
-   * 4️⃣ Punten alleen als niet in cooldown
+   * 4️⃣ Punten toekennen indien niet in cooldown
    */
   if (inCooldown) {
-    logDebug(
-      debug,
-      `⚠️ Geen punten (cooldown) → event wel gelogd (${userId})`
-    );
     return { ok: false, reason: "burst" };
   }
 
   addPoints(userId, POINTS[type]);
-  logDebug(debug, `✅ Punt toegekend → ${userId} (${type})`);
-
   return { ok: true };
 }
