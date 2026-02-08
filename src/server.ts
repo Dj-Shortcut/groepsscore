@@ -15,23 +15,24 @@ const server = http.createServer((req, res) => {
   /* --------------------------------------------------
    * Facebook Webhook verification (GET)
    * -------------------------------------------------- */
-  if (req.method === "GET" && req.url?.startsWith("/webhook/facebook")) {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-
+// webhook verification
+if (req.method === "GET" && url.pathname === "/webhook/facebook") {
     const mode = url.searchParams.get("hub.mode");
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
 
-    if (mode === "subscribe" && token === VERIFY_TOKEN && challenge) {
+    if (mode === "subscribe" &&
+        token === process.env.FB_VERIFY_TOKEN &&
+        challenge) {
       res.writeHead(200, { "Content-Type": "text/plain" });
       res.end(challenge);
       return;
     }
-
-    res.writeHead(403, { "Content-Type": "text/plain" });
+    res.writeHead(403);
     res.end("Forbidden");
     return;
-  }
+}
+
 
   /* --------------------------------------------------
    * Facebook Webhook events (POST)
