@@ -69,9 +69,9 @@ export function addPoints(userId, points) {
   `).run(points, points, Date.now(), userId);
 }
 /**
- * Reset maandelijkse scores
+ * Reset wekelijkse scores
  */
-export function resetMonthlyScores() {
+export function resetWeeklyScores() {
     db.prepare(`
     UPDATE scores
     SET weekly = 0,
@@ -79,9 +79,9 @@ export function resetMonthlyScores() {
   `).run(Date.now());
 }
 /**
- * Haal top N gebruikers op (maandranking)
+ * Haal top N gebruikers op (weekranking)
  */
-export function getMonthlyLeaderboard(limit = 10) {
+export function getWeeklyLeaderboard(limit = 10) {
     return db.prepare(`
     SELECT user_id, weekly
     FROM scores

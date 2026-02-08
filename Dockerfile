@@ -27,6 +27,8 @@ RUN npm ci
 # Copy application code
 COPY . .
 
+# Always compile TypeScript during image build
+RUN npm run build
 
 # Final stage for app image
 FROM base
