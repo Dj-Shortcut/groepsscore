@@ -9,12 +9,11 @@ LABEL fly_launch_runtime="Node.js"
 # Node.js app lives here
 WORKDIR /app
 
-# Set production environment
-ENV NODE_ENV="production"
-
-
 # Throw-away build stage to reduce size of final image
 FROM base AS build
+
+# Ensure devDependencies (e.g. TypeScript) are installed for the build
+ENV NODE_ENV="development"
 
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
@@ -30,6 +29,9 @@ COPY . .
 
 # Final stage for app image
 FROM base
+
+# Set production environment for runtime image
+ENV NODE_ENV="production"
 
 # Copy built application
 COPY --from=build /app /app
