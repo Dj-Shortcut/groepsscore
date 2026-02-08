@@ -13,7 +13,24 @@ const server = http.createServer((req, res) => {
     res.end("Bad Request");
     return;
   }
+ // ✅ ALTIJD 200 voor Meta
+    res.writeHead(200);
+    res.end("EVENT_RECEIVED");
 
+    try {
+      const payload = JSON.parse(body);
+      console.log(
+        "✅ VERIFIED META EVENT:",
+        JSON.stringify(payload, null, 2)
+      );
+    } catch (err) {
+      console.error("Invalid JSON", err);
+    }
+  });
+
+  return;
+}
+  
   const url = new URL(req.url, `http://${req.headers.host}`);
 
   console.log("REQ IN:", req.method, url.pathname);
