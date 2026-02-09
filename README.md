@@ -41,8 +41,6 @@ npm start
 npm test
 npm run leaderboard
 npm run export
-npm run reset:month
-npm run simulate:spam
 ```
 
 ---
