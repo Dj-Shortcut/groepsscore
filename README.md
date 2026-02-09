@@ -54,6 +54,7 @@ Zet minimaal deze variabelen:
 - `FB_GROUP_ID` — Group ID (uit URL zoals `.../groups/<ID>/`)
 - `FB_VERIFY_TOKEN` — webhook verify token
 - `FB_APP_SECRET` — app secret voor signature-validatie
+- `ADMIN_POST_TOKEN` — gedeeld admin-token vereist voor `/admin/post-*` endpoints
 
 ## 🛠️ Admin endpoints voor posten
 
@@ -62,8 +63,10 @@ Zet minimaal deze variabelen:
 
 Voorbeeld:
 ```bash
-curl -X POST http://localhost:8080/admin/post-test
-curl -X POST http://localhost:8080/admin/post-leaderboard
+curl -X POST http://localhost:8080/admin/post-test \
+  -H "Authorization: Bearer $ADMIN_POST_TOKEN"
+curl -X POST http://localhost:8080/admin/post-leaderboard \
+  -H "x-admin-token: $ADMIN_POST_TOKEN"
 ```
 
 ## 🔗 Webhook-contract (Facebook events)
