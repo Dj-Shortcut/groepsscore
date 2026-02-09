@@ -9,9 +9,7 @@
     "start": "node dist/server.js",
     "test": "tsx src/test.ts",
     "leaderboard": "tsx src/leaderboard.ts",
-    "export": "tsx src/export.ts",
-    "reset:month": "tsx src/monthlyReset.ts",
-    "simulate:spam": "tsx src/simulateSpam.ts"
+    "export": "tsx src/export.ts"
   },
   "dependencies": {
     "better-sqlite3": "^9.4.0"
