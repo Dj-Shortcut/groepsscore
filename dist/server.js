@@ -1,33 +1,68 @@
 import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
+import { verifyFacebookWebhook } from "./webhookVerification.js";
+import { verifyFacebookSignature } from "./verifyFacebookSignature.js";
 const DEFAULT_PORT = 8080;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 const HOST = "0.0.0.0";
-const server = http.createServer((req, res) => {
-    if (!req.url || !req.method) {
+const server = http.createServer(function (req, res) {
+    if (!req || !req.url || !req.method) {
         res.writeHead(400);
         res.end("Bad Request");
         return;
     }
-    const url = new URL(req.url, `http://${req.headers.host}`);
+    const url = new URL(req.url, "http://" + req.headers.host);
     console.log("REQ IN:", req.method, url.pathname);
-    // 🔹 Facebook Webhook verification
+    // =========================
+    // Facebook webhook VERIFY
+    // =========================
     if (req.method === "GET" && url.pathname === "/webhook/facebook") {
-        const mode = url.searchParams.get("hub.mode");
-        const token = url.searchParams.get("hub.verify_token");
-        const challenge = url.searchParams.get("hub.challenge");
-        if (mode === "subscribe" &&
-            token === process.env.FB_VERIFY_TOKEN &&
-            challenge) {
+        const result = verifyFacebookWebhook(url, process.env.FB_VERIFY_TOKEN);
+        if (result.status === 200) {
             res.writeHead(200, { "Content-Type": "text/plain" });
-            res.end(challenge);
+            res.end(result.body);
             return;
         }
         res.writeHead(403);
-        res.end("Forbidden");
+        res.end(result.body);
         return;
     }
-    // 🔹 Health check
+    // =========================
+    // Facebook webhook EVENTS
+    // =========================
+    if (req.method === "POST" && url.pathname === "/webhook/facebook") {
+        let body = "";
+        req.on("data", function (chunk) {
+            body += chunk;
+        });
+        req.on("end", function () {
+            const signatureHeader = req.headers["x-hub-signature-256"];
+            const signature = typeof signatureHeader === "string"
+                ? signatureHeader
+                : undefined;
+            const valid = verifyFacebookSignature(body, signature);
+            if (!valid) {
+                console.warn("Invalid Facebook signature");
+                res.writeHead(403);
+                res.end("Invalid signature");
+                return;
+            }
+            // Meta requires 200 OK
+            res.writeHead(200);
+            res.end("EVENT_RECEIVED");
+            try {
+                const payload = JSON.parse(body);
+                console.log("VERIFIED META EVENT:", JSON.stringify(payload, null, 2));
+            }
+            catch (e) {
+                console.error("Invalid JSON payload");
+            }
+        });
+        return;
+    }
+    // =========================
+    // Health check
+    // =========================
     if (req.method === "GET" && url.pathname === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify({
@@ -36,16 +71,20 @@ const server = http.createServer((req, res) => {
         }));
         return;
     }
-    // 🔹 Leaderboard
+    // =========================
+    // Leaderboard
+    // =========================
     if (req.method === "GET" && url.pathname.startsWith("/leaderboard")) {
         leaderboardHandler(res);
         return;
     }
-    // 🔻 Fallback
+    // =========================
+    // Fallback
+    // =========================
     res.writeHead(404, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: "not_found" }));
 });
-server.listen(PORT, HOST, () => {
-    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+server.listen(PORT, HOST, function () {
+    console.log("Server running on " + HOST + ":" + PORT);
 });
 //# sourceMappingURL=server.js.map

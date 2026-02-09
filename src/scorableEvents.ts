@@ -11,13 +11,11 @@ export type ScorableEventType = Extract<
   "post" | "comment"
 >;
 
-const SCORABLE_EVENT_TYPES: ReadonlySet<EventType> = new Set([
-  "post",
-  "comment",
-]);
-
+/**
+ * Runtime guard voor scorable events.
+ */
 export function isScorableEvent(
   type: EventType
 ): type is ScorableEventType {
-  return SCORABLE_EVENT_TYPES.has(type);
+  return type === "post" || type === "comment";
 }
