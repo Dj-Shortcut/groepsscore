@@ -10,3 +10,12 @@ export type ScorableEventType = Extract<
   EventType,
   "post" | "comment"
 >;
+
+/**
+ * Runtime guard voor scorable events.
+ */
+export function isScorableEvent(
+  type: EventType
+): type is ScorableEventType {
+  return type === "post" || type === "comment";
+}
