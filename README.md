@@ -45,6 +45,27 @@ npm run export
 
 ---
 
+
+## ⚙️ Environment variabelen
+
+Zet minimaal deze variabelen:
+
+- `FB_PAGE_ACCESS_TOKEN` — Page access token met rechten om in de groep te posten
+- `FB_GROUP_ID` — Group ID (uit URL zoals `.../groups/<ID>/`)
+- `FB_VERIFY_TOKEN` — webhook verify token
+- `FB_APP_SECRET` — app secret voor signature-validatie
+
+## 🛠️ Admin endpoints voor posten
+
+- `POST /admin/post-test` — plaatst `testbericht` in de geconfigureerde groep
+- `POST /admin/post-leaderboard` — plaatst de actuele leaderboardtekst in de groep
+
+Voorbeeld:
+```bash
+curl -X POST http://localhost:8080/admin/post-test
+curl -X POST http://localhost:8080/admin/post-leaderboard
+```
+
 ## 🔗 Webhook-contract (Facebook events)
 
 Verwacht Facebook event:

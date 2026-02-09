@@ -2,12 +2,14 @@ import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 import { verifyFacebookWebhook } from "./webhookVerification.js";
 import { verifyFacebookSignature } from "./verifyFacebookSignature.js";
+import { generateWeeklyLeaderboardText } from "./leaderboard.js";
+import { postToFacebookGroup } from "./facebook/postToGroup.js";
 
 const DEFAULT_PORT = 8080;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 const HOST = "0.0.0.0";
 
-const server = http.createServer(function (req, res) {
+const server = http.createServer(async function (req, res) {
   if (!req || !req.url || !req.method) {
     res.writeHead(400);
     res.end("Bad Request");
@@ -106,6 +108,38 @@ const server = http.createServer(function (req, res) {
       send(200, "EVENT_RECEIVED");
     });
 
+    return;
+  }
+
+  // =========================
+  // Admin posting endpoints
+  // =========================
+  if (req.method === "POST" && url.pathname === "/admin/post-test") {
+    try {
+      await postToFacebookGroup(process.env.FB_GROUP_ID || "", "testbericht");
+      send(200, JSON.stringify({ status: "ok" }), {
+        "Content-Type": "application/json",
+      });
+    } catch (error) {
+      send(500, JSON.stringify({ error: (error as Error).message }), {
+        "Content-Type": "application/json",
+      });
+    }
+    return;
+  }
+
+  if (req.method === "POST" && url.pathname === "/admin/post-leaderboard") {
+    try {
+      const leaderboardText = generateWeeklyLeaderboardText();
+      await postToFacebookGroup(process.env.FB_GROUP_ID || "", leaderboardText);
+      send(200, JSON.stringify({ status: "ok" }), {
+        "Content-Type": "application/json",
+      });
+    } catch (error) {
+      send(500, JSON.stringify({ error: (error as Error).message }), {
+        "Content-Type": "application/json",
+      });
+    }
     return;
   }
 
