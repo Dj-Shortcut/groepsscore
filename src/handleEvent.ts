@@ -1,4 +1,5 @@
-import { InternalEvent, isScorableEvent } from "./events.js";
+import { InternalEvent } from "./events.js";
+import { isScorableEvent } from "./scorableEvents.js";
 import { awardPoints } from "./xpEngine.js";
 
 /**
