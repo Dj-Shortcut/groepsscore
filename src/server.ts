@@ -11,12 +11,26 @@ const server = http.createServer(function (req, res) {
   if (!req || !req.url || !req.method) {
     res.writeHead(400);
     res.end("Bad Request");
+    console.info("REQ", req?.method ?? "UNKNOWN", req?.url ?? "UNKNOWN", 400);
     return;
   }
 
   const url = new URL(req.url, "http://" + req.headers.host);
 
-  console.log("REQ IN:", req.method, url.pathname);
+  const send = function (
+    statusCode: number,
+    body?: string,
+    headers?: http.OutgoingHttpHeaders
+  ): void {
+    if (headers) {
+      res.writeHead(statusCode, headers);
+    } else {
+      res.writeHead(statusCode);
+    }
+
+    res.end(body);
+    console.info("REQ", req.method, url.pathname, statusCode);
+  };
 
   // =========================
   // Facebook webhook VERIFY
@@ -28,13 +42,11 @@ const server = http.createServer(function (req, res) {
     );
 
     if (result.status === 200) {
-      res.writeHead(200, { "Content-Type": "text/plain" });
-      res.end(result.body);
+      send(200, result.body, { "Content-Type": "text/plain" });
       return;
     }
 
-    res.writeHead(403);
-    res.end(result.body);
+    send(403, result.body);
     return;
   }
 
@@ -42,43 +54,56 @@ const server = http.createServer(function (req, res) {
   // Facebook webhook EVENTS
   // =========================
   if (req.method === "POST" && url.pathname === "/webhook/facebook") {
-    let body = "";
+    let rawBody = "";
 
     req.on("data", function (chunk) {
-      body += chunk;
+      rawBody += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+    });
+
+    req.on("error", function () {
+      send(400, "Bad Request");
     });
 
     req.on("end", function () {
-      const signatureHeader =
-        req.headers["x-hub-signature-256"];
-
+      const signatureHeader = req.headers["x-hub-signature-256"];
       const signature =
         typeof signatureHeader === "string"
           ? signatureHeader
           : undefined;
 
-      const valid = verifyFacebookSignature(body, signature);
-
-      if (!valid) {
-        console.warn("Invalid Facebook signature");
-        res.writeHead(403);
-        res.end("Invalid signature");
+      if (!process.env.FB_APP_SECRET) {
+        console.warn("FB_APP_SECRET is not configured");
+        send(403, "Invalid signature");
         return;
       }
 
-      // Meta requires 200 OK
-      res.writeHead(200);
-      res.end("EVENT_RECEIVED");
+      const valid = verifyFacebookSignature(rawBody, signature);
 
-      try {
-        const payload = JSON.parse(body);
-        console.log(
-          "VERIFIED META EVENT:",
-          JSON.stringify(payload, null, 2)
-        );
-      } catch (e) {
-        console.error("Invalid JSON payload");
+      if (!valid) {
+        console.warn("Invalid Facebook signature");
+        send(403, "Invalid signature");
+        return;
       }
+
+      let payload: unknown;
+      try {
+        payload = rawBody.length > 0 ? JSON.parse(rawBody) : {};
+      } catch (_error) {
+        send(400, "Invalid JSON payload");
+        return;
+      }
+
+      const objectValue =
+        payload && typeof payload === "object" && "object" in payload
+          ? String((payload as { object?: unknown }).object ?? "")
+          : "";
+
+      if (objectValue !== "page") {
+        send(200, "EVENT_RECEIVED");
+        return;
+      }
+
+      send(200, "EVENT_RECEIVED");
     });
 
     return;
@@ -88,12 +113,13 @@ const server = http.createServer(function (req, res) {
   // Health check
   // =========================
   if (req.method === "GET" && url.pathname === "/health") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(
+    send(
+      200,
       JSON.stringify({
         status: "ok",
         time: Date.now(),
-      })
+      }),
+      { "Content-Type": "application/json" }
     );
     return;
   }
@@ -103,14 +129,16 @@ const server = http.createServer(function (req, res) {
   // =========================
   if (req.method === "GET" && url.pathname.startsWith("/leaderboard")) {
     leaderboardHandler(res);
+    console.info("REQ", req.method, url.pathname, 200);
     return;
   }
 
   // =========================
   // Fallback
   // =========================
-  res.writeHead(404, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ error: "not_found" }));
+  send(404, JSON.stringify({ error: "not_found" }), {
+    "Content-Type": "application/json",
+  });
 });
 
 server.listen(PORT, HOST, function () {
