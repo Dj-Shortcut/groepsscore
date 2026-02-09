@@ -9,6 +9,30 @@ const DEFAULT_PORT = 8080;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 const HOST = "0.0.0.0";
 
+function getAdminToken(req: http.IncomingMessage): string | undefined {
+  const authorizationHeader = req.headers.authorization;
+  if (typeof authorizationHeader === "string") {
+    const bearerPrefix = "Bearer ";
+    if (authorizationHeader.startsWith(bearerPrefix)) {
+      return authorizationHeader.slice(bearerPrefix.length);
+    }
+  }
+
+  const xAdminTokenHeader = req.headers["x-admin-token"];
+  return typeof xAdminTokenHeader === "string" ? xAdminTokenHeader : undefined;
+}
+
+function isAuthorizedAdminRequest(req: http.IncomingMessage): boolean {
+  const expectedToken = process.env.ADMIN_POST_TOKEN;
+  if (!expectedToken) {
+    console.warn("ADMIN_POST_TOKEN is not configured");
+    return false;
+  }
+
+  const providedToken = getAdminToken(req);
+  return providedToken === expectedToken;
+}
+
 const server = http.createServer(async function (req, res) {
   if (!req || !req.url || !req.method) {
     res.writeHead(400);
@@ -115,6 +139,13 @@ const server = http.createServer(async function (req, res) {
   // Admin posting endpoints
   // =========================
   if (req.method === "POST" && url.pathname === "/admin/post-test") {
+    if (!isAuthorizedAdminRequest(req)) {
+      send(403, JSON.stringify({ error: "forbidden" }), {
+        "Content-Type": "application/json",
+      });
+      return;
+    }
+
     try {
       await postToFacebookGroup(process.env.FB_GROUP_ID || "", "testbericht");
       send(200, JSON.stringify({ status: "ok" }), {
@@ -129,6 +160,13 @@ const server = http.createServer(async function (req, res) {
   }
 
   if (req.method === "POST" && url.pathname === "/admin/post-leaderboard") {
+    if (!isAuthorizedAdminRequest(req)) {
+      send(403, JSON.stringify({ error: "forbidden" }), {
+        "Content-Type": "application/json",
+      });
+      return;
+    }
+
     try {
       const leaderboardText = generateWeeklyLeaderboardText();
       await postToFacebookGroup(process.env.FB_GROUP_ID || "", leaderboardText);
