@@ -2,73 +2,127 @@ import http from "http";
 import { leaderboardHandler } from "./routes/leaderboard.js";
 import { verifyFacebookWebhook } from "./webhookVerification.js";
 import { verifyFacebookSignature } from "./verifyFacebookSignature.js";
+import { generateWeeklyLeaderboardText } from "./leaderboard.js";
+import { postToFacebookGroup } from "./facebook/postToGroup.js";
 const DEFAULT_PORT = 8080;
 const PORT = Number(process.env.PORT) || DEFAULT_PORT;
 const HOST = "0.0.0.0";
-const server = http.createServer(function (req, res) {
+const server = http.createServer(async function (req, res) {
     if (!req || !req.url || !req.method) {
         res.writeHead(400);
         res.end("Bad Request");
+        console.info("REQ", req?.method ?? "UNKNOWN", req?.url ?? "UNKNOWN", 400);
         return;
     }
     const url = new URL(req.url, "http://" + req.headers.host);
-    console.log("REQ IN:", req.method, url.pathname);
+    const send = function (statusCode, body, headers) {
+        if (headers) {
+            res.writeHead(statusCode, headers);
+        }
+        else {
+            res.writeHead(statusCode);
+        }
+        res.end(body);
+        console.info("REQ", req.method, url.pathname, statusCode);
+    };
     // =========================
     // Facebook webhook VERIFY
     // =========================
     if (req.method === "GET" && url.pathname === "/webhook/facebook") {
         const result = verifyFacebookWebhook(url, process.env.FB_VERIFY_TOKEN);
         if (result.status === 200) {
-            res.writeHead(200, { "Content-Type": "text/plain" });
-            res.end(result.body);
+            send(200, result.body, { "Content-Type": "text/plain" });
             return;
         }
-        res.writeHead(403);
-        res.end(result.body);
+        send(403, result.body);
         return;
     }
     // =========================
     // Facebook webhook EVENTS
     // =========================
     if (req.method === "POST" && url.pathname === "/webhook/facebook") {
-        let body = "";
+        let rawBody = "";
         req.on("data", function (chunk) {
-            body += chunk;
+            rawBody += Buffer.isBuffer(chunk) ? chunk.toString("utf8") : String(chunk);
+        });
+        req.on("error", function () {
+            send(400, "Bad Request");
         });
         req.on("end", function () {
             const signatureHeader = req.headers["x-hub-signature-256"];
             const signature = typeof signatureHeader === "string"
                 ? signatureHeader
                 : undefined;
-            const valid = verifyFacebookSignature(body, signature);
-            if (!valid) {
-                console.warn("Invalid Facebook signature");
-                res.writeHead(403);
-                res.end("Invalid signature");
+            if (!process.env.FB_APP_SECRET) {
+                console.warn("FB_APP_SECRET is not configured");
+                send(403, "Invalid signature");
                 return;
             }
-            // Meta requires 200 OK
-            res.writeHead(200);
-            res.end("EVENT_RECEIVED");
+            const valid = verifyFacebookSignature(rawBody, signature);
+            if (!valid) {
+                console.warn("Invalid Facebook signature");
+                send(403, "Invalid signature");
+                return;
+            }
+            let payload;
             try {
-                const payload = JSON.parse(body);
-                console.log("VERIFIED META EVENT:", JSON.stringify(payload, null, 2));
+                payload = rawBody.length > 0 ? JSON.parse(rawBody) : {};
             }
-            catch (e) {
-                console.error("Invalid JSON payload");
+            catch (_error) {
+                send(400, "Invalid JSON payload");
+                return;
             }
+            const objectValue = payload && typeof payload === "object" && "object" in payload
+                ? String(payload.object ?? "")
+                : "";
+            if (objectValue !== "page") {
+                send(200, "EVENT_RECEIVED");
+                return;
+            }
+            send(200, "EVENT_RECEIVED");
         });
+        return;
+    }
+    // =========================
+    // Admin posting endpoints
+    // =========================
+    if (req.method === "POST" && url.pathname === "/admin/post-test") {
+        try {
+            await postToFacebookGroup(process.env.FB_GROUP_ID || "", "testbericht");
+            send(200, JSON.stringify({ status: "ok" }), {
+                "Content-Type": "application/json",
+            });
+        }
+        catch (error) {
+            send(500, JSON.stringify({ error: error.message }), {
+                "Content-Type": "application/json",
+            });
+        }
+        return;
+    }
+    if (req.method === "POST" && url.pathname === "/admin/post-leaderboard") {
+        try {
+            const leaderboardText = generateWeeklyLeaderboardText();
+            await postToFacebookGroup(process.env.FB_GROUP_ID || "", leaderboardText);
+            send(200, JSON.stringify({ status: "ok" }), {
+                "Content-Type": "application/json",
+            });
+        }
+        catch (error) {
+            send(500, JSON.stringify({ error: error.message }), {
+                "Content-Type": "application/json",
+            });
+        }
         return;
     }
     // =========================
     // Health check
     // =========================
     if (req.method === "GET" && url.pathname === "/health") {
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
+        send(200, JSON.stringify({
             status: "ok",
             time: Date.now(),
-        }));
+        }), { "Content-Type": "application/json" });
         return;
     }
     // =========================
@@ -76,13 +130,15 @@ const server = http.createServer(function (req, res) {
     // =========================
     if (req.method === "GET" && url.pathname.startsWith("/leaderboard")) {
         leaderboardHandler(res);
+        console.info("REQ", req.method, url.pathname, 200);
         return;
     }
     // =========================
     // Fallback
     // =========================
-    res.writeHead(404, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: "not_found" }));
+    send(404, JSON.stringify({ error: "not_found" }), {
+        "Content-Type": "application/json",
+    });
 });
 server.listen(PORT, HOST, function () {
     console.log("Server running on " + HOST + ":" + PORT);
